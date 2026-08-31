@@ -68,14 +68,6 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  // TEMP DEBUG — à retirer une fois le bug résolu. Affiche dans les
-  // logs Netlify Functions ce que le serveur reçoit réellement, pour
-  // savoir si le problème est un body vide, mal parsé, ou des clés
-  // au mauvais format.
-  console.log("[DEBUG /api/auth/login] content-type:", req.headers["content-type"]);
-  console.log("[DEBUG /api/auth/login] typeof req.body:", typeof req.body);
-  console.log("[DEBUG /api/auth/login] req.body:", JSON.stringify(req.body));
-
   const cin = typeof req.body?.cin === "string" ? req.body.cin.trim() : "";
   const password = typeof req.body?.password === "string" ? req.body.password : "";
   const firstName = typeof req.body?.firstName === "string" ? req.body.firstName.trim() : "";
@@ -90,7 +82,6 @@ router.post("/login", async (req, res) => {
   const secret = process.env.JWT_SECRET;
 
   if (!cin || !password || !firstName || !lastName) {
-    console.log("[DEBUG /api/auth/login] Champ(s) manquant(s) — cin:", !!cin, "password:", !!password, "firstName:", !!firstName, "lastName:", !!lastName);
     return res.status(400).json({ error: "All login fields are required", data: null });
   }
 
