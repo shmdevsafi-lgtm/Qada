@@ -14,8 +14,9 @@ name: Build
 # Actions) before this workflow can succeed — see
 # docs/ANDROID_BUILD.md for the full explanation of each:
 #   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY   — client Supabase config
-#   VITE_API_BASE_URL                            — absolute backend URL
+#   QADA_PRODUCTION_URL                          — absolute production URL
 #                                                    (e.g. https://qiadati.netlify.app)
+#                                                    used as the API base URL
 #                                                    baked into the APK build
 #                                                    only, since the APK is
 #                                                    bundled offline (no
@@ -143,8 +144,10 @@ jobs:
           # `/api/...` fetch call (client/lib/authService.ts,
           # client/lib/offline/teamAccess.ts,
           # client/lib/offline/syncQueue.ts) needs an absolute URL to
-          # reach the real deployed backend instead.
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          # reach the real deployed backend instead. The repository secret
+          # is named QADA_PRODUCTION_URL; VITE_API_BASE_URL is the
+          # build-time variable exposed to the client bundle.
+          VITE_API_BASE_URL: ${{ secrets.QADA_PRODUCTION_URL }}
           # AES-256 key (base64), shared with the members portal repo,
           # used to decrypt member badge QR payloads — see
           # client/lib/badgeCrypto.ts. Must be byte-identical in both
