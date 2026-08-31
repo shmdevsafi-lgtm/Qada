@@ -96,9 +96,16 @@ function bytesToBase64Url(bytes: Uint8Array): string {
 
 async function getKey(): Promise<CryptoKey> {
   if (!cachedKeyPromise) {
+    // Cast needed because recent TS DOM lib versions distinguish
+    // Uint8Array<ArrayBufferLike> from BufferSource strictly (a
+    // Uint8Array's backing buffer is typed as ArrayBuffer |
+    // SharedArrayBuffer, but BufferSource wants exactly
+    // ArrayBuffer) -- this is a type-only mismatch, not a runtime
+    // one; a plain Uint8Array from base64ToBytes always has a real
+    // ArrayBuffer backing it.
     cachedKeyPromise = crypto.subtle.importKey(
       "raw",
-      base64ToBytes(getRawKeyBase64()),
+      base64ToBytes(getRawKeyBase64()) as BufferSource,
       { name: "AES-GCM" },
       false,
       ["encrypt", "decrypt"],
@@ -123,9 +130,9 @@ export async function encryptBadgePayload(
   const plaintext = new TextEncoder().encode(JSON.stringify(payload));
 
   const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv as BufferSource },
     key,
-    plaintext,
+    plaintext as BufferSource,
   );
 
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
@@ -194,9 +201,9 @@ export async function decryptBadgePayload(raw: string): Promise<DecodedBadge> {
 
     const key = await getKey();
     const plaintextBuffer = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv },
+      { name: "AES-GCM", iv: iv as BufferSource },
       key,
-      ciphertext,
+      ciphertext as BufferSource,
     );
 
     const payload = JSON.parse(
